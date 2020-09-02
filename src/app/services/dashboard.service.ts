@@ -5,6 +5,7 @@ import { Observable, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
 import { GetDocument, DSSConfiguration, DSSInvoice, DSSStatusCount, CertificateClass, DSSErrorInvoice, UserByPlant, ErrorInvoice } from 'app/models/dss';
 import { catchError } from 'rxjs/operators';
+import { DocumentTypeView } from 'app/models/master';
 
 @Injectable()
 export class DashboardService {
@@ -249,10 +250,11 @@ export class DashboardService {
     return this._httpClient.get<ErrorInvoice[]>(`${this.baseUrl}api/ESigner/GetAllErrorDocumentsByUser?UserName=${UserName}`)
       .pipe(catchError(this.errorHandler));
   }
-  // GetAllDocumentTypes(): Observable<string[] | string> {
-  //   return this._httpClient.get<string[]>(`${this.baseUrl}api/ESigner/GetAllDocumentTypes`)
-  //     .pipe(catchError(this.errorHandler));
-  // }
+
+  GetAllDocumentTypes(): Observable<DocumentTypeView[] | string> {
+    return this._httpClient.get<DocumentTypeView[]>(`${this.baseUrl}api/ESigner/GetAllDocumentTypes`)
+      .pipe(catchError(this.errorHandler));
+  }
 
 
   DowloandPdfFromID(ID: number): Observable<Blob | string> {

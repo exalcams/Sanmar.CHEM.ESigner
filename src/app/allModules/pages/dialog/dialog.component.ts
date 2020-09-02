@@ -22,19 +22,36 @@ export class DialogComponent implements OnInit {
     AllUserEmails: string[] = [];
     AllPlants: PlantView[] = [];
     AllFilteredPlants: PlantView[] = [];
-    // AllDocumentTypes: DocumentTypeView[] = [];
+    AllDocumentTypes: DocumentTypeView[] = [];
     // AllFilteredDocumentTypes: DocumentTypeView[] = [];
     AllAuthority: AuthorityClass[] = [];
     AllUsersByPlant: UserByPlant[] = [];
     AllFilteredUsersByPlant: UserByPlant[] = [];
     AllCertificates: CertificateClass[] = [];
     CurrentDSSConfiguration: DSSConfiguration[] = [];
-    // OutputTypeList:string[]=['ZWOR','ZWOL','ZFLX','ZOTC','ZRMG','ZDN1','ZDN2','ZDN4','ZJOB','ZBWD','ZSRP','ZD07','ZD08','ZSTO','ZST1','ZCR1','ZCR2','RD00'];
-    OutputTypeList=[{SelectOutPutType:'ZWOR'},{SelectOutPutType:'ZWOL'},{SelectOutPutType:'ZOTC'},{SelectOutPutType:'ZRMG'},{SelectOutPutType:'ZDN1'},{SelectOutPutType:'ZDN2'},
-    {SelectOutPutType:'ZDN4'},{SelectOutPutType:'ZJOB'},{SelectOutPutType:'ZBWD'},{SelectOutPutType:'ZSRP'},{SelectOutPutType:'ZD07'},{SelectOutPutType:'ZD08'},
-    {SelectOutPutType:'ZSTO'},{SelectOutPutType:'ZST1'},{SelectOutPutType:'ZCR1'},{SelectOutPutType:'ZCR2'},{SelectOutPutType:'RD00'},{SelectOutPutType:'ZFLX'}];
+    // AllDocumentTypes = [
+    //     {
+    //         Doc_Type_ID: '1',
+    //         Doc_Type_Name: 'ZDIG'
+    //     },
+    //     {
+    //         Doc_Type_ID: '2',
+    //         Doc_Type_Name: 'ZEXP'
+    //     },
+    //     {
+    //         Doc_Type_ID: '3',
+    //         Doc_Type_Name: 'ZP00'
+    //     },
+    //     {
+    //         Doc_Type_ID: '4',
+    //         Doc_Type_Name: 'ZRD0'
+    //     },
+    //     {
+    //         Doc_Type_ID: '5',
+    //         Doc_Type_Name: 'ZSAM'
+    //     },
+    // ];
     selectedDocumentType: string;
-    // SelectOutPutType: string;
     constructor(
         public matDialogRef: MatDialogRef<DialogComponent>,
         @Inject(MAT_DIALOG_DATA) public DSSConfigurationData: DSSConfiguration,
@@ -65,15 +82,17 @@ export class DialogComponent implements OnInit {
             this.ConfigurationFormGroup.get(key).markAsUntouched();
         });
     }
+
     ngOnInit(): void {
         this.GetAllCertificateFromStore();
         this.GetAllAuthoritys();
-       // console.log(this.DSSConfigurationData);
+        this.GetDocumentTypes();
+        // console.log(this.DSSConfigurationData);
         if (this.DSSConfigurationData) {
             this.ConfigurationFormGroup.setValue({
                 // AutoSign: this.DSSConfigurationData.AUTOSIGN ? '1' : '0',
                 // SignedAuthority: this.DSSConfigurationData.AUTHORITY,
-                DocumentType: this.DSSConfigurationData.CONFIG1,
+                DocumentType: this.DSSConfigurationData.DOCTYPE,
                 Config1: this.DSSConfigurationData.CONFIG1,
                 Config2: this.DSSConfigurationData.CONFIG2,
                 Config3: this.DSSConfigurationData.CONFIG3,
@@ -83,6 +102,11 @@ export class DialogComponent implements OnInit {
                 DisplayTitle1: this.DSSConfigurationData.DISPLAYTITLE1,
                 DisplayTitle2: this.DSSConfigurationData.DISPLAYTITLE2
             });
+            this.ConfigurationFormGroup.get('DocumentType').disable();
+            this.ConfigurationFormGroup.get('Config1').disable();
+            this.ConfigurationFormGroup.get('Config2').disable();
+            this.ConfigurationFormGroup.get('Config3').disable();
+            this.ConfigurationFormGroup.get('Authority').disable();
         } else {
             this.DSSConfigurationData = new DSSConfiguration();
             this.ResetControl();
@@ -105,6 +129,17 @@ export class DialogComponent implements OnInit {
         );
     }
 
+    GetDocumentTypes(): void {
+        this.dashboardService.GetAllDocumentTypes().subscribe(
+            data => {
+                this.AllDocumentTypes = <DocumentTypeView[]>data;
+            },
+            err => {
+                console.error(err);
+            }
+        );
+    }
+
     GetAllUserEmails(): void {
         this.dashboardService.GetAllUserEmails().subscribe(
             data => {
@@ -117,7 +152,7 @@ export class DialogComponent implements OnInit {
     }
 
     SignedAuthoritySelected(SignedAuthority: string): void {
-       // console.log(SignedAuthority);
+        // console.log(SignedAuthority);
         const res = this.AllAuthority.filter(x => x.UserName === SignedAuthority)[0];
         if (res) {
         }
@@ -175,7 +210,7 @@ export class DialogComponent implements OnInit {
     YesClicked(): void {
         if (this.ConfigurationFormGroup.valid) {
             const expDate = this.datepipe.transform(this.ConfigurationFormGroup.get('ExpiryDate').value, 'dd-MM-yyyy');
-            // this.DSSConfigurationData.DOCTYPE = this.ConfigurationFormGroup.get('DocumentType').value;
+            this.DSSConfigurationData.DOCTYPE = this.ConfigurationFormGroup.get('DocumentType').value;
             // this.DSSConfigurationData.Plant_ID = this.ConfigurationFormGroup.get('Plant').value;
             this.DSSConfigurationData.CONFIG1 = this.ConfigurationFormGroup.get('Config1').value;
             this.DSSConfigurationData.CONFIG2 = this.ConfigurationFormGroup.get('Config2').value;
@@ -200,7 +235,9 @@ export class DialogComponent implements OnInit {
     CloseClicked(): void {
         this.matDialogRef.close(null);
     }
+
     GetDocumentType(documentType: string): void {
-        this.ConfigurationFormGroup.controls['Config1'].setValue(documentType);
+        this.ConfigurationFormGroup.controls['Config3'].setValue(documentType);
     }
+
 }
